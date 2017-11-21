@@ -8,6 +8,7 @@
 if __name__ == "__main__":
 
     from preprocessor.data_helper import *
+    from app_utils.io_util import save_as_pickle
     from sklearn.metrics import classification_report
     from classifier.classification_algorithms import *
     from preprocessor.data_cleaning import features_select_rf
@@ -17,7 +18,7 @@ if __name__ == "__main__":
     dh_er = DataHelper(data_file=test_file)
     dh_er.preprocessor()
     selected_feats = features_select_rf(
-        x_data=dh_er.x_data, y_data=dh_er.y_data, top_n=0.7)
+        x_data=dh_er.x_data, y_data=dh_er.y_data, top_n=0.8)
     dh_er.prepare_training_data(selected_features=selected_feats)
 
     x_max, y_vec = dh_er.x_matrix, dh_er.y_vector
@@ -30,4 +31,7 @@ if __name__ == "__main__":
 
     print("### logistic classifier | test | outcome ###")
     print(classification_report(y_dev, y_pred))
+
+    save_as_pickle(lr_model, "exceed_time_judge.model", "./model")
+    save_as_pickle(dh_er, "clean_data_obj.model", "./model")
 
