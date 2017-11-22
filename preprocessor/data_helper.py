@@ -20,11 +20,12 @@ class DataHelper:
         self.y_vector = None
         self.x_data = None
         self.y_data = None
+        self.user_id = None
         self._clipped_data = None
         self._clipped_data_one_hot = None
 
     def preprocessor(self, row_limit=None):
-        self.x_data, self.y_data = data_clean(
+        self.x_data, self.y_data, self.user_id = data_clean(
             self.data_file, row_limit=row_limit)
         self.features = self.x_data.columns
 
@@ -43,6 +44,45 @@ class DataHelper:
             x_tr = self._clipped_data
         self.x_matrix = x_tr.as_matrix().astype(np.float32)
         self.y_vector = [int(x) for x in self.y_data.tolist()]
+
+    def reorganize_data(self, data_file,
+                        row_limit=None,
+                        for_predict=False,
+                        one_hot_encode=True,
+                        discrete_cols=discrete_columns):
+        """
+        用于检验、预测。将新数据转换成与训练数据格式一致
+        如果 for_predict=False， 代码中的tmp_value指代 (sloanapplyid, 因变量)；反之 只代表 sloanapplyid
+        :param data_file: 
+        :param row_limit: 
+        :param for_predict: 新数据用于检验，False; 用于预测（需要打上标签），True
+        :param one_hot_encode: 
+        :param discrete_cols: 
+        :return: 
+        """
+        if for_predict:
+            new_data, user_id = data_clean(data_file,
+                                           row_limit=row_limit,
+                                           for_predict=for_predict)
+            tmp_value = user_id
+        else:
+            new_data, y_true, user_id = data_clean(data_file,
+                                                   row_limit=row_limit,
+                                                   for_predict=for_predict)
+            tmp_value = list(zip(user_id, y_true))
+        new_data = new_data[self._clipped_data.columns]
+        if one_hot_encode:
+            new_data = one_hot_encoder(
+                new_data,
+                discrete_cols=discrete_cols
+            )
+            model_feats = set(self.clipped_data_one_hot.columns)
+            current_feats = new_data.columns
+            for mf in model_feats:
+                if mf not in current_feats:
+                    new_data[mf] = 0
+            new_data = new_data[self.clipped_data_one_hot.columns]
+        return new_data.as_matrix().astype(np.float32), tmp_value
 
     @property
     def clipped_data(self):

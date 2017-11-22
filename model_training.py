@@ -61,6 +61,6 @@ if __name__ == "__main__":
     print("### nb classifier | test | outcome ###")
     print(classification_report(y_dev, y_predict4))
 
-    # save_as_pickle(lr_model, "exceed_time.judge", "./model")
+    save_as_pickle(lr_model, "exceed_time.judge", "./model")
     save_as_pickle(dh_er, "clean_data.obj", "./model")
 

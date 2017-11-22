@@ -92,9 +92,11 @@ def data_transform(data):
 
     del train_data['channel_nm']
     del train_data['version_num']
+
+    user_id = train_data['sloanapplyid']
     del train_data['sloanapplyid']
     del train_data['zhima_idno_risk_level']
-    return train_data
+    return train_data, user_id
 
 
 # 数据归一化
@@ -170,7 +172,8 @@ def features_select_rf(x_data, y_data, top_n=1.0,
 
 
 # 综合函数
-def data_clean(data_file='../test_data/train.csv', row_limit=300):
+def data_clean(data_file='../test_data/train.csv',
+               row_limit=300, for_predict=False):
     import os
     assert os.path.exists(data_file)
     from config_file.features_config import discrete_columns
@@ -180,12 +183,17 @@ def data_clean(data_file='../test_data/train.csv', row_limit=300):
         assert isinstance(row_limit, int)
         train_data = train_data[:row_limit]
 
+    transform_data, user_id = data_transform(train_data)
     train_data = data_normalization(
             missing_value_processor(
-                data_transform(train_data)
+                transform_data
             ), except_cols=discrete_columns
         )
-    return train_data.drop('is_yq', 1), pd.to_numeric(train_data['is_yq'], downcast='signed')
+    if for_predict:
+        if 'is_yq' in train_data.columns:
+            train_data = train_data.drop('is_yq', 1)
+        return train_data, user_id.tolist()
+    return train_data.drop('is_yq', 1), pd.to_numeric(train_data['is_yq'], downcast='signed'), user_id.tolist()
 
 if __name__ == "__main__":
     x_data1, y_data1 = data_clean()
