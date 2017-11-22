@@ -100,7 +100,7 @@ def data_transform(data):
 
 
 # 数据归一化
-def data_normalization(data, scale_type="max_min", except_cols=None):
+def data_normalization(data, scale_type="z_score", except_cols=None):
     """
     最大最小值归一
     :return: 
@@ -173,7 +173,7 @@ def features_select_rf(x_data, y_data, top_n=1.0,
 
 # 综合函数
 def data_clean(data_file='../test_data/train.csv',
-               row_limit=300, for_predict=False):
+               row_limit=300, for_predict=False, scale_type=None):
     import os
     assert os.path.exists(data_file)
     from config_file.features_config import discrete_columns
@@ -187,7 +187,7 @@ def data_clean(data_file='../test_data/train.csv',
     train_data = data_normalization(
             missing_value_processor(
                 transform_data
-            ), except_cols=discrete_columns
+            ), except_cols=discrete_columns, scale_type=scale_type
         )
     if for_predict:
         if 'is_yq' in train_data.columns:
