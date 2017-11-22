@@ -6,6 +6,3 @@ __pycache__
 *.xlsx
 .Rhistory
 *.R
-*.model
-*.obj
-*.judge
