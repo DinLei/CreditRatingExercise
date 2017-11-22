@@ -6,6 +6,9 @@
 
 import numpy as np
 import pandas as pd
+import warnings
+
+warnings.filterwarnings('ignore')
 
 
 # 离散数据one-hot-encode处理
@@ -16,21 +19,20 @@ def one_hot_encoder(data, discrete_cols):
     :param discrete_cols: 
     :return: 变换后的data，pd.DataFrame
     """
+    if not discrete_cols:
+        return data
     assert isinstance(discrete_cols, list)
     assert isinstance(data, pd.core.frame.DataFrame)
+
+    current_cols = set(data.columns)
     for column in discrete_cols:
-        if "is_yq" == column:
+        if column == "is_yq":
+            continue
+        if column not in current_cols:
             continue
         print("\tDiscretize the feature:【{}】...".format(column))
-        unique_values = np.unique(data[column]).astype('int')
-        sub_column_names = []
-        for unique_value in unique_values:
-            sub_column_names.append("{}_{}".format(column, unique_value))
-        for sub_column_counter in range(len(sub_column_names)):
-            data[sub_column_names[sub_column_counter]] = -1
-            for data_counter in range(len(data)):
-                data.loc[data_counter, sub_column_names[sub_column_counter]] = \
-                    int(data[column][data_counter] == unique_values[sub_column_counter])
+        tmp = pd.get_dummies(data[column], prefix=column)
+        data = pd.concat([data, tmp], axis=1)
         del data[column]
     print("Features discretization task completed!")
     return data
@@ -96,7 +98,7 @@ def data_transform(data):
 
 
 # 数据归一化
-def max_min_normalize(data, except_cols=None):
+def data_normalization(data, scale_type="max_min", except_cols=None):
     """
     最大最小值归一
     :return: 
@@ -109,9 +111,27 @@ def max_min_normalize(data, except_cols=None):
         selected_cols = [x for x in data.columns if x not in except_cols]
     else:
         selected_cols = data.columns
-    data[selected_cols] = data[selected_cols].apply(
-        lambda x: (x-np.min(x)) / (np.max(x)-np.min(x)+0.000001))
+    if scale_type == "max_min":
+        from sklearn.preprocessing import minmax_scale
+        data[selected_cols] = data[selected_cols].apply(minmax_scale, axis=0)
+    elif scale_type == "z_score":
+        from sklearn.preprocessing import scale
+        data[selected_cols] = data[selected_cols].apply(scale, axis=0)
+    elif scale_type == "normalize":
+        data[selected_cols] = data[selected_cols].apply(normalize, axis=0)
     return data
+
+
+def normalize(arr):
+    """
+    将每个样本缩放到单位范数, 配合data_normalization方法使用
+    :param arr: np.array或者list
+    :return: 
+    """
+    from sklearn.preprocessing import normalize
+    x = np.reshape(np.array(arr), (1, len(arr)))
+    x = normalize(x)
+    return x.tolist()[0]
 
 
 # 特征选择，随机森林
@@ -125,6 +145,7 @@ def features_select_rf(x_data, y_data, top_n=1.0,
     feat_labels = x_data.columns
     x_mat = x_data.as_matrix().astype(np.float32)
     y_vec = y_data.tolist()
+    # print(feat_labels)
     # print(np.any(np.isnan(x_mat)))
     # print(np.all(np.isfinite(x_mat)))
 
@@ -159,14 +180,12 @@ def data_clean(data_file='../test_data/train.csv', row_limit=300):
         assert isinstance(row_limit, int)
         train_data = train_data[:row_limit]
 
-    train_data = one_hot_encoder(
-        max_min_normalize(
+    train_data = data_normalization(
             missing_value_processor(
                 data_transform(train_data)
             ), except_cols=discrete_columns
-        ), discrete_cols=discrete_columns
-    )
-    return train_data.drop('is_yq', 1), train_data['is_yq']
+        )
+    return train_data.drop('is_yq', 1), pd.to_numeric(train_data['is_yq'], downcast='signed')
 
 if __name__ == "__main__":
     x_data1, y_data1 = data_clean()
