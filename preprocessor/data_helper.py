@@ -70,7 +70,12 @@ class DataHelper:
                                                    row_limit=row_limit,
                                                    for_predict=for_predict)
             tmp_value = list(zip(user_id, y_true))
-        new_data = new_data[self._clipped_data.columns]
+        model_feats = set(self.clipped_data.columns)
+        current_feats = new_data.columns
+        for mf in model_feats:
+            if mf not in current_feats:
+                new_data[mf] = 0
+        new_data = new_data[self.clipped_data.columns]
         if one_hot_encode:
             new_data = one_hot_encoder(
                 new_data,
