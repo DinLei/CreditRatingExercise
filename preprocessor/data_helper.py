@@ -25,8 +25,11 @@ class DataHelper:
             self.data_file, row_limit=row_limit)
         self.features = self.x_data.columns
 
-    def prepare_training_data(self, selected_features):
-        x_tr = self.x_data[selected_features]
+    def prepare_training_data(self, selected_features=None):
+        if selected_features:
+            x_tr = self.x_data[selected_features]
+        else:
+            x_tr = self.x_data
         self.x_matrix = x_tr.as_matrix().astype(np.float32)
         self.y_vector = self.y_data.tolist()
 
