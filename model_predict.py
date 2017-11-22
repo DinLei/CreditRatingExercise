@@ -25,6 +25,7 @@ def predict(data_file,
 
 
 def predict_report(self_outcome):
+    import numpy as np
     from sklearn.metrics import classification_report
     y_test = []
     y_predict = []
@@ -35,8 +36,21 @@ def predict_report(self_outcome):
             y_test.append(ele[0])
         y_predict.append(ele[1])
     print(classification_report(y_test, y_predict))
+    return np.array(y_test), np.array(y_predict)
+
+
+def test_index(self_outcome):
+    y_test, y_predict = predict_report(self_outcome)
+    total = len(y_predict)
+    in_time_predict = sum(y_predict==0)
+    false_true = sum((y_predict==0) & (y_test==1))
+
+    pass_rate = (in_time_predict/total) * 100
+    exceed_time_rate = (false_true/in_time_predict) * 100
+    print("通过率: {:.2f}% ; 逾期率: {:.2f}%".format(pass_rate, exceed_time_rate))
 
 
 if __name__ == "__main__":
     test_outcome = predict("./test_data/train.csv", row_limit=None)
-    predict_report(test_outcome)
+    test_index(test_outcome)
+

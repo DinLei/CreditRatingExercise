@@ -10,7 +10,7 @@ if __name__ == "__main__":
     from preprocessor.data_helper import *
     from sklearn.metrics import classification_report
     from classifier.classification_algorithms import *
-    from app_utils.io_util import save_as_pickle, load_pickle
+    from app_utils.io_util import save_as_pickle
     from preprocessor.data_cleaning import features_select_rf
 
     test_file = "./test_data/train.csv"
