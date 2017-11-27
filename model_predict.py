@@ -4,6 +4,8 @@
 # @Time    : 2017/11/22 11:51
 # @Author  : HeHonXue
 
+import numpy as np
+
 
 def predict(data_file,
             row_limit=None,
@@ -25,7 +27,6 @@ def predict(data_file,
 
 
 def predict_report(self_outcome):
-    import numpy as np
     from sklearn.metrics import classification_report
     y_test = []
     y_predict = []

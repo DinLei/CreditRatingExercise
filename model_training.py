@@ -26,10 +26,10 @@ if __name__ == "__main__":
         selected_features=selected_feats
     )
 
-    x_max, y_vec = dh_er.x_matrix, dh_er.y_vector
+    x_mat, y_vec = dh_er.x_matrix, dh_er.y_vector
 
     x_train, x_dec, y_train, y_dev = data_splits(
-        x_matrix=x_max, y_vector=y_vec, test_size=0.2)
+        x_matrix=x_mat, y_vector=y_vec, test_size=0.2)
 
     # 模型测试
     lr_model = logistic_regression_classifier(x_train, y_train)
